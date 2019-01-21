@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Collections.Generic;
 
 namespace MotionList
 {
@@ -43,9 +42,7 @@ namespace MotionList
                 writer.Write(IDHash);
                 writer.Write((long)Entries.Count);
                 foreach (Motion motion in Entries)
-                {
                     motion.Write(writer);
-                }
             }
         }
     }
