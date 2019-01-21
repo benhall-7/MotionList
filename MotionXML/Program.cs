@@ -13,7 +13,7 @@ namespace MotionXML
         {
             try
             {
-                list = new MotionFile(args[0]);
+                list = new MotionFile("motion_list.bin");
                 xml = new XmlDocument();
                 xml.AppendChild(xml.CreateXmlDeclaration("1.0", "UTF-8", null));
                 XmlNode root = NodeWithAttribute("MotionList", "ID", "0x" + list.IDHash.ToString("x10"));
@@ -30,9 +30,9 @@ namespace MotionXML
                         motionNode.AppendChild(NodeWithValue("ExpressionHash", "0x" + motionA.ExpressionHash.ToString("x10")));
                         motionNode.AppendChild(NodeWithValue("SoundHash", "0x" + motionA.SoundHash.ToString("x10")));
                         motionNode.AppendChild(NodeWithValue("EffectHash", "0x" + motionA.EffectHash.ToString("x10")));
-                        motionNode.AppendChild(NodeWithValue("XluStart", "0x" + motionA.XluStart.ToString()));
-                        motionNode.AppendChild(NodeWithValue("XluEnd", "0x" + motionA.XluEnd.ToString()));
-                        motionNode.AppendChild(NodeWithValue("CancelFrame", "0x" + motionA.CancelFrame.ToString()));
+                        motionNode.AppendChild(NodeWithValue("XluStart", motionA.XluStart.ToString()));
+                        motionNode.AppendChild(NodeWithValue("XluEnd", motionA.XluEnd.ToString()));
+                        motionNode.AppendChild(NodeWithValue("CancelFrame", motionA.CancelFrame.ToString()));
                     }
                     else
                     {
