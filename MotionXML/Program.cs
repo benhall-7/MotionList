@@ -13,7 +13,7 @@ namespace MotionXML
         {
             try
             {
-                list = new MotionFile("motion_list.bin");
+                list = new MotionFile(args[0]);
                 xml = new XmlDocument();
                 xml.AppendChild(xml.CreateXmlDeclaration("1.0", "UTF-8", null));
                 XmlNode root = NodeWithAttribute("MotionList", "ID", "0x" + list.IDHash.ToString("x10"));
@@ -45,7 +45,6 @@ namespace MotionXML
                 }
                 xml.AppendChild(root);
                 xml.Save("output.xml");
-                Console.ReadKey();
             }
             catch (Exception e)
             {

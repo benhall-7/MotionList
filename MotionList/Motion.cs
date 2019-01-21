@@ -16,6 +16,7 @@ namespace MotionList
             GameHash = gameHash;
             Flags = flags;
             Unk14 = unk14;
+            AnimationHash = animationHash;
         }
 
         internal virtual void Write(BinaryWriter writer)
