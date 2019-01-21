@@ -3,15 +3,16 @@ using System.IO;
 
 namespace MotionList
 {
-    public class MotionList
+    public class MotionFile
     {
         public const ulong Magic = 0x06f5fea1e8;//motion
 
         public ulong IDHash { get; set; }
         public List<Motion> Entries { get; set; }
 
-        public MotionList(string filename)
+        public MotionFile(string filename)
         {
+            Entries = new List<Motion>();
             using (BinaryReader reader = new BinaryReader(File.OpenRead(filename)))
             {
                 if (reader.ReadUInt64() != Magic)

@@ -2,7 +2,7 @@
 
 namespace MotionList
 {
-    class MotionB : Motion
+    public class MotionB : Motion
     {
         public ulong UnkHash20 { get; set; }
         public ulong UnkHash28 { get; set; }

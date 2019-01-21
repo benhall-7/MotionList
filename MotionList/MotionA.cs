@@ -2,7 +2,7 @@
 
 namespace MotionList
 {
-    class MotionA : Motion
+    public class MotionA : Motion
     {
         public int Unk20 { get; set; }
         public ulong ExpressionHash { get; set; }
@@ -15,6 +15,7 @@ namespace MotionList
         internal MotionA(BinaryReader reader, ulong motionKind, ulong gameHash, uint flags, int unk14, ulong animHash)
             : base(motionKind, gameHash, flags, unk14, animHash)
         {
+            Unk20 = reader.ReadInt32();
             ExpressionHash = reader.ReadUInt64();
             SoundHash = reader.ReadUInt64();
             EffectHash = reader.ReadUInt64();
