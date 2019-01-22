@@ -21,18 +21,7 @@ namespace MotionList
                 int count = reader.ReadInt32();
                 reader.BaseStream.Position = 0x18;//alignment
                 for (int i = 0; i < count; i++)
-                {
-                    ulong motionKind = reader.ReadUInt64();
-                    ulong gameHash = reader.ReadUInt64();
-                    ushort flags = reader.ReadUInt16();
-                    byte frames = reader.ReadByte();
-                    bool hasAnimation = reader.ReadBoolean();
-                    int unk14 = reader.ReadInt32();
-                    if (hasAnimation)
-                        Entries.Add(new MotionA(reader, motionKind, gameHash, flags, frames, hasAnimation, unk14));
-                    else
-                        Entries.Add(new MotionB(reader, motionKind, gameHash, flags, frames, hasAnimation, unk14));
-                }
+                    Entries.Add(new Motion(reader));
             }
         }
 
