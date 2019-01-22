@@ -4,16 +4,15 @@ namespace MotionList
 {
     public class MotionA : Motion
     {
+        public ulong AnimationHash { get; set; }
         public int Unk20 { get; set; }
-        public ulong ExpressionHash { get; set; }
-        public ulong SoundHash { get; set; }
-        public ulong EffectHash { get; set; }
         public byte XluStart { get; set; }
         public byte XluEnd { get; set; }
         public short CancelFrame { get; set; }
 
-        internal MotionA(BinaryReader reader, ulong motionKind, ulong gameHash, ushort flags, byte frames, byte type, int unk14, ulong animHash) : base(motionKind, gameHash, flags, frames, type, unk14, animHash)
+        internal MotionA(BinaryReader reader, ulong motionKind, ulong gameHash, ushort flags, byte frames, bool hasAnim, int unk14) : base(motionKind, gameHash, flags, frames, hasAnim, unk14)
         {
+            AnimationHash = reader.ReadUInt64();
             Unk20 = reader.ReadInt32();
             ExpressionHash = reader.ReadUInt64();
             SoundHash = reader.ReadUInt64();
@@ -27,6 +26,7 @@ namespace MotionList
         {
             base.Write(writer);
 
+            writer.Write(AnimationHash);
             writer.Write(Unk20);
             writer.Write(ExpressionHash);
             writer.Write(SoundHash);

@@ -26,13 +26,12 @@ namespace MotionList
                     ulong gameHash = reader.ReadUInt64();
                     ushort flags = reader.ReadUInt16();
                     byte frames = reader.ReadByte();
-                    byte type = reader.ReadByte();
+                    bool hasAnimation = reader.ReadBoolean();
                     int unk14 = reader.ReadInt32();
-                    ulong animHash = reader.ReadUInt64();
-                    if (type != 0)
-                        Entries.Add(new MotionA(reader, motionKind, gameHash, flags, frames, type, unk14, animHash));
+                    if (hasAnimation)
+                        Entries.Add(new MotionA(reader, motionKind, gameHash, flags, frames, hasAnimation, unk14));
                     else
-                        Entries.Add(new MotionB(reader, motionKind, gameHash, flags, frames, type, unk14, animHash));
+                        Entries.Add(new MotionB(reader, motionKind, gameHash, flags, frames, hasAnimation, unk14));
                 }
             }
         }

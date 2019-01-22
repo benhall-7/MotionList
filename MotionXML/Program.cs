@@ -23,15 +23,15 @@ namespace MotionXML
                     motionNode.AppendChild(NodeWithValue("GameHash", "0x" + motion.GameHash.ToString("x10")));
                     motionNode.AppendChild(NodeWithValue("Flags", "0x" + motion.Flags.ToString("x4")));
                     motionNode.AppendChild(NodeWithValue("TransitionFrames", motion.Frames.ToString()));
-                    motionNode.AppendChild(NodeWithValue("Type", motion.Type.ToString()));
+                    motionNode.AppendChild(NodeWithValue("HasAnimation", motion.HasAnimation.ToString()));
                     motionNode.AppendChild(NodeWithValue("Unk14", motion.Unk14.ToString()));
-                    motionNode.AppendChild(NodeWithValue("AnimationHash", "0x" + motion.AnimationHash.ToString("x10")));
                     if (motion is MotionA motionA)
                     {
+                        motionNode.AppendChild(NodeWithValue("AnimationHash", "0x" + motionA.AnimationHash.ToString("x10")));
                         motionNode.AppendChild(NodeWithValue("Unk20", motionA.Unk20.ToString()));
-                        motionNode.AppendChild(NodeWithValue("ExpressionHash", "0x" + motionA.ExpressionHash.ToString("x10")));
-                        motionNode.AppendChild(NodeWithValue("SoundHash", "0x" + motionA.SoundHash.ToString("x10")));
-                        motionNode.AppendChild(NodeWithValue("EffectHash", "0x" + motionA.EffectHash.ToString("x10")));
+                        motionNode.AppendChild(NodeWithValue("ExpressionHash", "0x" + motion.ExpressionHash.ToString("x10")));
+                        motionNode.AppendChild(NodeWithValue("SoundHash", "0x" + motion.SoundHash.ToString("x10")));
+                        motionNode.AppendChild(NodeWithValue("EffectHash", "0x" + motion.EffectHash.ToString("x10")));
                         motionNode.AppendChild(NodeWithValue("XluStart", motionA.XluStart.ToString()));
                         motionNode.AppendChild(NodeWithValue("XluEnd", motionA.XluEnd.ToString()));
                         motionNode.AppendChild(NodeWithValue("CancelFrame", motionA.CancelFrame.ToString()));
@@ -39,8 +39,9 @@ namespace MotionXML
                     else
                     {
                         MotionB motionB = motion as MotionB;
-                        motionNode.AppendChild(NodeWithValue("UnkHash20", "0x" + motionB.UnkHash20.ToString("x10")));
-                        motionNode.AppendChild(NodeWithValue("UnkHash28", "0x" + motionB.UnkHash28.ToString("x10")));
+                        motionNode.AppendChild(NodeWithValue("ExpressionHash", "0x" + motion.ExpressionHash.ToString("x10")));
+                        motionNode.AppendChild(NodeWithValue("SoundHash", "0x" + motion.SoundHash.ToString("x10")));
+                        motionNode.AppendChild(NodeWithValue("EffectHash", "0x" + motion.EffectHash.ToString("x10")));
                         motionNode.AppendChild(NodeWithValue("Unk30", motionB.Unk30.ToString()));
                     }
                     root.AppendChild(motionNode);
