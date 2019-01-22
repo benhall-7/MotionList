@@ -6,15 +6,19 @@ namespace MotionList
     {
         public ulong MotionKind { get; set; }
         public ulong GameHash { get; set; }
-        public uint Flags { get; set; }
+        public ushort Flags { get; set; }//replace this with individual flags later
+        public byte Frames { get; set; }
+        public byte Type { get; set; }
         public int Unk14 { get; set; }//always 0x1c?
         public ulong AnimationHash { get; set; }
 
-        public Motion(ulong motionKind, ulong gameHash, uint flags, int unk14, ulong animationHash)
+        public Motion(ulong motionKind, ulong gameHash, ushort flags, byte frames, byte type, int unk14, ulong animationHash)
         {
             MotionKind = motionKind;
             GameHash = gameHash;
             Flags = flags;
+            Frames = frames;
+            Type = type;
             Unk14 = unk14;
             AnimationHash = animationHash;
         }

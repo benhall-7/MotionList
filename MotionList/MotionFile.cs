@@ -22,19 +22,17 @@ namespace MotionList
                 reader.BaseStream.Position = 0x18;//alignment
                 for (int i = 0; i < count; i++)
                 {
-                    try
-                    {
-                        ulong motionKind = reader.ReadUInt64();
-                        ulong gameHash = reader.ReadUInt64();
-                        uint flags = reader.ReadUInt32();
-                        int unk14 = reader.ReadInt32();
-                        ulong animHash = reader.ReadUInt64();
-                        if ((flags & 0x01000000) != 0)
-                            Entries.Add(new MotionA(reader, motionKind, gameHash, flags, unk14, animHash));
-                        else
-                            Entries.Add(new MotionB(reader, motionKind, gameHash, flags, unk14, animHash));
-                    }
-                    catch { break; }
+                    ulong motionKind = reader.ReadUInt64();
+                    ulong gameHash = reader.ReadUInt64();
+                    ushort flags = reader.ReadUInt16();
+                    byte frames = reader.ReadByte();
+                    byte type = reader.ReadByte();
+                    int unk14 = reader.ReadInt32();
+                    ulong animHash = reader.ReadUInt64();
+                    if (type != 0)
+                        Entries.Add(new MotionA(reader, motionKind, gameHash, flags, frames, type, unk14, animHash));
+                    else
+                        Entries.Add(new MotionB(reader, motionKind, gameHash, flags, frames, type, unk14, animHash));
                 }
             }
         }

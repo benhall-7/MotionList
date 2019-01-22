@@ -12,8 +12,7 @@ namespace MotionList
         public byte XluEnd { get; set; }
         public short CancelFrame { get; set; }
 
-        internal MotionA(BinaryReader reader, ulong motionKind, ulong gameHash, uint flags, int unk14, ulong animHash)
-            : base(motionKind, gameHash, flags, unk14, animHash)
+        internal MotionA(BinaryReader reader, ulong motionKind, ulong gameHash, ushort flags, byte frames, byte type, int unk14, ulong animHash) : base(motionKind, gameHash, flags, frames, type, unk14, animHash)
         {
             Unk20 = reader.ReadInt32();
             ExpressionHash = reader.ReadUInt64();

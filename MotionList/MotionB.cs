@@ -8,8 +8,7 @@ namespace MotionList
         public ulong UnkHash28 { get; set; }
         public int Unk30 { get; set; }
 
-        internal MotionB(BinaryReader reader, ulong motionKind, ulong gameHash, uint flags, int unk14, ulong animHash)
-            : base(motionKind, gameHash, flags, unk14, animHash)
+        internal MotionB(BinaryReader reader, ulong motionKind, ulong gameHash, ushort flags, byte frames, byte type, int unk14, ulong animHash) : base(motionKind, gameHash, flags, frames, type, unk14, animHash)
         {
             UnkHash20 = reader.ReadUInt64();
             UnkHash28 = reader.ReadUInt64();

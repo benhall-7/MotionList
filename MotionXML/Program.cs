@@ -21,7 +21,9 @@ namespace MotionXML
                 {
                     XmlNode motionNode = NodeWithAttribute("Motion", "Kind", "0x" + motion.MotionKind.ToString("x10"));
                     motionNode.AppendChild(NodeWithValue("GameHash", "0x" + motion.GameHash.ToString("x10")));
-                    motionNode.AppendChild(NodeWithValue("Flags", "0x" + motion.Flags.ToString("x8")));
+                    motionNode.AppendChild(NodeWithValue("Flags", "0x" + motion.Flags.ToString("x4")));
+                    motionNode.AppendChild(NodeWithValue("TransitionFrames", motion.Frames.ToString()));
+                    motionNode.AppendChild(NodeWithValue("Type", motion.Type.ToString()));
                     motionNode.AppendChild(NodeWithValue("Unk14", motion.Unk14.ToString()));
                     motionNode.AppendChild(NodeWithValue("AnimationHash", "0x" + motion.AnimationHash.ToString("x10")));
                     if (motion is MotionA motionA)
