@@ -27,7 +27,7 @@ namespace MotionXML
                     if (motion.HasAnimation)
                     {
                         motionNode.AppendChild(NodeWithValue("AnimationHash", "0x" + motion.AnimationHash.ToString("x10")));
-                        motionNode.AppendChild(NodeWithValue("Unk2", motion.Unk2.ToString()));
+                        motionNode.AppendChild(NodeWithValue("Unk", motion.Unk.ToString()));
                     }
                     if (motion.HasExpression)
                         motionNode.AppendChild(NodeWithValue("ExpressionHash", "0x" + motion.ExpressionHash.ToString("x10")));
@@ -35,11 +35,12 @@ namespace MotionXML
                         motionNode.AppendChild(NodeWithValue("SoundHash", "0x" + motion.SoundHash.ToString("x10")));
                     if (motion.HasEffect)
                         motionNode.AppendChild(NodeWithValue("EffectHash", "0x" + motion.EffectHash.ToString("x10")));
-                    if (motion.HasXluOrCancel)
+                    if (motion.HasExtended)
                     {
                         motionNode.AppendChild(NodeWithValue("XluStart", motion.XluStart.ToString()));
                         motionNode.AppendChild(NodeWithValue("XluEnd", motion.XluEnd.ToString()));
                         motionNode.AppendChild(NodeWithValue("CancelFrame", motion.CancelFrame.ToString()));
+                        motionNode.AppendChild(NodeWithValue("NoStopIntp", motion.NoStopIntp.ToString()));
                     }
                     root.AppendChild(motionNode);
                 }

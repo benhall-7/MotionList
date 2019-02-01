@@ -11,18 +11,19 @@ namespace MotionList
         public bool HasAnimation { get; set; }
         private int Size { get; set; }
         public ulong AnimationHash { get; set; }
-        public int Unk2 { get; set; }
+        public int Unk { get; set; }
         public ulong ExpressionHash { get; set; }
         public ulong SoundHash { get; set; }
         public ulong EffectHash { get; set; }
         public byte XluStart { get; set; }
         public byte XluEnd { get; set; }
-        public short CancelFrame { get; set; }
+        public byte CancelFrame { get; set; }
+        public bool NoStopIntp { get; set; }
 
         public bool HasExpression { get { return Size / 8 >= 3; } }
         public bool HasSound { get { return Size / 8 >= 2; } }
         public bool HasEffect { get { return Size / 8 >= 1; } }
-        public bool HasXluOrCancel { get { return Size % 8 == 4; } }
+        public bool HasExtended { get { return Size % 8 == 4; } }
 
         internal Motion(BinaryReader reader)
         {
@@ -35,7 +36,7 @@ namespace MotionList
             if (HasAnimation)
             {
                 AnimationHash = reader.ReadUInt64();
-                Unk2 = reader.ReadInt32();
+                Unk = reader.ReadInt32();
             }
             if (HasExpression)
                 ExpressionHash = reader.ReadUInt64();
@@ -43,11 +44,12 @@ namespace MotionList
                 SoundHash = reader.ReadUInt64();
             if (HasEffect)
                 EffectHash = reader.ReadUInt64();
-            if (HasXluOrCancel)
+            if (HasExtended)
             {
                 XluStart = reader.ReadByte();
                 XluEnd = reader.ReadByte();
-                CancelFrame = reader.ReadInt16();
+                CancelFrame = reader.ReadByte();
+                NoStopIntp = reader.ReadBoolean();
             }
         }
 
@@ -62,7 +64,7 @@ namespace MotionList
             if (HasAnimation)
             {
                 writer.Write(AnimationHash);
-                writer.Write(Unk2);
+                writer.Write(Unk);
             }
             if (HasExpression)
                 writer.Write(ExpressionHash);
@@ -70,11 +72,12 @@ namespace MotionList
                 writer.Write(SoundHash);
             if (HasEffect)
                 writer.Write(EffectHash);
-            if (HasXluOrCancel)
+            if (HasExtended)
             {
                 writer.Write(XluStart);
                 writer.Write(XluEnd);
                 writer.Write(CancelFrame);
+                writer.Write(NoStopIntp);
             }
         }
     }
