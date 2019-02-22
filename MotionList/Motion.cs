@@ -33,10 +33,10 @@ namespace MotionList
         }
         public enum ExtraHashGroup
         {
-            None    = 0,
-            F       = 8,
-            SF      = 0x10,
-            XSF     = 0x18,
+            None     = 0,
+            F        = 8,
+            SF       = 0x10,
+            XSF      = 0x18,
             SFG2S2F2 = 0x28
         }
 
