@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace MotionList
 {
@@ -8,22 +10,35 @@ namespace MotionList
         public ulong GameHash { get; set; }
         public ushort Flags { get; set; }//replace this with individual flags later
         public byte Frames { get; set; }
-        public bool HasAnimation { get; set; }
+        public byte AnimationCount { get; set; }
         private int Size { get; set; }
-        public ulong AnimationHash { get; set; }
-        public int Unk { get; set; }
-        public ulong ExpressionHash { get; set; }
-        public ulong SoundHash { get; set; }
-        public ulong EffectHash { get; set; }
+        public List<ulong> AnimationHashes { get; set; }
+        public List<byte> AnimationUnks { get; set; }
+        public Dictionary<ExtraHashKind, ulong> ExtraHashes { get; set; }
+        public bool HasExtended { get; set; }
         public byte XluStart { get; set; }
         public byte XluEnd { get; set; }
         public byte CancelFrame { get; set; }
         public bool NoStopIntp { get; set; }
 
-        public bool HasExpression { get { return Size / 8 >= 3; } }
-        public bool HasSound { get { return Size / 8 >= 2; } }
-        public bool HasEffect { get { return Size / 8 >= 1; } }
-        public bool HasExtended { get { return Size % 8 == 4; } }
+        public enum ExtraHashKind
+        {
+            Expression,
+            Sound,
+            Effect,
+            Game2,
+            Expression2,
+            Sound2,
+            Effect2
+        }
+        public enum ExtraHashGroup
+        {
+            None    = 0,
+            F       = 8,
+            SF      = 0x10,
+            XSF     = 0x18,
+            SFG2S2F2 = 0x28
+        }
 
         internal Motion(BinaryReader reader)
         {
@@ -31,19 +46,51 @@ namespace MotionList
             GameHash = reader.ReadUInt64();
             Flags = reader.ReadUInt16();
             Frames = reader.ReadByte();
-            HasAnimation = reader.ReadBoolean();
+            AnimationCount = reader.ReadByte();
+            if (AnimationCount > 3)
+                throw new InvalidDataException("Filetype entry cannot have > 3 animations. Are there unknown flags?");
             Size = reader.ReadInt32();
-            if (HasAnimation)
+            HasExtended = Size % 8 == 4;
+
+            AnimationHashes = new List<ulong>(AnimationCount);
+            AnimationUnks = new List<byte>(AnimationCount);
+
+            for (int i = 0; i < AnimationCount; i++)
+                AnimationHashes.Add(reader.ReadUInt64());
+            for (int i = 0; i < AnimationCount; i++)
+                AnimationUnks.Add(reader.ReadByte());
+
+            reader.BaseStream.Position = (reader.BaseStream.Position + 3 >> 2) << 2;//alignment by 4
+
+            int hashSize = Size / 8 * 8;
+            if (!Enum.IsDefined(typeof(ExtraHashGroup), hashSize))
+                throw new NotImplementedException($"No implemented hash group has the size = \'{Size}\'");
+
+            ExtraHashes = new Dictionary<ExtraHashKind, ulong>();
+            switch ((ExtraHashGroup)hashSize)
             {
-                AnimationHash = reader.ReadUInt64();
-                Unk = reader.ReadInt32();
+                case ExtraHashGroup.None:
+                    break;
+                case ExtraHashGroup.F:
+                    ExtraHashes.Add(ExtraHashKind.Effect, reader.ReadUInt64());
+                    break;
+                case ExtraHashGroup.SF:
+                    ExtraHashes.Add(ExtraHashKind.Sound, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.Effect, reader.ReadUInt64());
+                    break;
+                case ExtraHashGroup.XSF:
+                    ExtraHashes.Add(ExtraHashKind.Expression, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.Sound, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.Effect, reader.ReadUInt64());
+                    break;
+                case ExtraHashGroup.SFG2S2F2:
+                    ExtraHashes.Add(ExtraHashKind.Sound, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.Effect, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.Game2, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.Sound2, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.Effect2, reader.ReadUInt64());
+                    break;
             }
-            if (HasExpression)
-                ExpressionHash = reader.ReadUInt64();
-            if (HasSound)
-                SoundHash = reader.ReadUInt64();
-            if (HasEffect)
-                EffectHash = reader.ReadUInt64();
             if (HasExtended)
             {
                 XluStart = reader.ReadByte();
@@ -59,19 +106,48 @@ namespace MotionList
             writer.Write(GameHash);
             writer.Write(Flags);
             writer.Write(Frames);
-            writer.Write(HasAnimation);
+
+            if (AnimationCount > 3)
+                throw new InvalidDataException("Filetype entry cannot have > 3 animations. Are there unknown flags?");
+            writer.Write(AnimationCount);
+            
+            Size = 8 * ExtraHashes.Count + (HasExtended ? 4 : 0);
             writer.Write(Size);
-            if (HasAnimation)
+
+            for (int i = 0; i < AnimationCount; i++)
+                writer.Write(AnimationHashes[i]);
+            for (int i = 0; i < AnimationCount; i++)
+                writer.Write(AnimationUnks[i]);
+            
+            int hashSize = ExtraHashes.Count;
+            if (!Enum.IsDefined(typeof(ExtraHashGroup), hashSize))
+                throw new NotImplementedException($"No implemented hash group has the size = \'{Size}\'");
+
+            switch ((ExtraHashGroup)hashSize)
             {
-                writer.Write(AnimationHash);
-                writer.Write(Unk);
+                case ExtraHashGroup.None:
+                    break;
+                case ExtraHashGroup.F:
+                    writer.Write(ExtraHashes[ExtraHashKind.Effect]);
+                    break;
+                case ExtraHashGroup.SF:
+                    writer.Write(ExtraHashes[ExtraHashKind.Sound]);
+                    writer.Write(ExtraHashes[ExtraHashKind.Effect]);
+                    break;
+                case ExtraHashGroup.XSF:
+                    writer.Write(ExtraHashes[ExtraHashKind.Expression]);
+                    writer.Write(ExtraHashes[ExtraHashKind.Sound]);
+                    writer.Write(ExtraHashes[ExtraHashKind.Effect]);
+                    break;
+                case ExtraHashGroup.SFG2S2F2:
+                    writer.Write(ExtraHashes[ExtraHashKind.Sound]);
+                    writer.Write(ExtraHashes[ExtraHashKind.Effect]);
+                    writer.Write(ExtraHashes[ExtraHashKind.Game2]);
+                    writer.Write(ExtraHashes[ExtraHashKind.Sound2]);
+                    writer.Write(ExtraHashes[ExtraHashKind.Effect2]);
+                    break;
             }
-            if (HasExpression)
-                writer.Write(ExpressionHash);
-            if (HasSound)
-                writer.Write(SoundHash);
-            if (HasEffect)
-                writer.Write(EffectHash);
+
             if (HasExtended)
             {
                 writer.Write(XluStart);
