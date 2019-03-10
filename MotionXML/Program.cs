@@ -18,7 +18,6 @@ namespace MotionXML
 
         static void Main(string[] args)
         {
-            args = new string[] { "-a", "output.xml" };
             AsmMode mode = AsmMode.Invalid;
             string input = "";
             string output = "";
