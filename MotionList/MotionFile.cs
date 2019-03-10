@@ -10,6 +10,10 @@ namespace MotionList
         public ulong IDHash { get; set; }
         public List<Motion> Entries { get; set; }
 
+        public MotionFile()
+        {
+
+        }
         public MotionFile(string filename)
         {
             Entries = new List<Motion>();

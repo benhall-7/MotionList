@@ -91,6 +91,7 @@ namespace MotionList
                     ExtraHashes.Add(ExtraHashKind.Effect2, reader.ReadUInt64());
                     break;
             }
+
             if (HasExtended)
             {
                 XluStart = reader.ReadByte();

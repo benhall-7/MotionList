@@ -12,11 +12,12 @@ namespace MotionXML
         static XmlDocument Xml { get; set; }
         static Dictionary<ulong, string> Labels { get; set; }
 
-        static string HelpText = $"Required args: [file]{Environment.NewLine}Optional args: -l [labels] ; -o [output]";
+        static string HelpText = $"Required args: -d / -a [disasm/asm] ; [file]{Environment.NewLine}" +
+            "Optional args: -l [labels] ; -o [output]";
 
         static void Main(string[] args)
         {
-            args = new string[] { "motion_list.bin", "-l", "Labels.txt" };
+            AsmMode mode = AsmMode.Invalid;
             string input = "";
             string output = "output.xml";
             string labels = "";
@@ -29,6 +30,16 @@ namespace MotionXML
             {
                 switch (args[i])
                 {
+                    case "-h":
+                    case "help":
+                        Console.WriteLine(HelpText);
+                        break;
+                    case "-d":
+                        mode = AsmMode.Disasm;
+                        break;
+                    case "-a":
+                        mode = AsmMode.Asm;
+                        break;
                     case "-l":
                         labels = args[++i];
                         break;
@@ -46,14 +57,31 @@ namespace MotionXML
                 Console.WriteLine(HelpText);
                 return;
             }
-
-            MFile = new MotionFile(input);
+            
             Xml = new XmlDocument();
+
             if (string.IsNullOrEmpty(labels))
                 Labels = new Dictionary<ulong, string>();
             else
                 Labels = GetLabels(labels);
 
+            switch (mode)
+            {
+                case AsmMode.Invalid:
+                    Console.WriteLine("Asm mode not set. See -h");
+                    break;
+                case AsmMode.Disasm:
+                    MFile = new MotionFile(input);
+                    Disasm();
+                    Xml.Save(output);
+                    break;
+                case AsmMode.Asm:
+                    break;
+            }
+        }
+
+        static void Disasm()
+        {
             Xml.AppendChild(Xml.CreateXmlDeclaration("1.0", "UTF-8", null));
             XmlNode root = NodeWithAttribute("MotionList", "ID", ConvertHash(MFile.IDHash));
             foreach (Motion motion in MFile.Entries)
@@ -82,7 +110,11 @@ namespace MotionXML
                 root.AppendChild(motionNode);
             }
             Xml.AppendChild(root);
-            Xml.Save(output);
+        }
+
+        static void Asm()
+        {
+
         }
 
         static XmlNode NodeWithAttribute(string nodeName, string attrName, string attrValue)
@@ -122,8 +154,9 @@ namespace MotionXML
         
         static string ConvertHash(ulong hash)
         {
-            try { return Labels[hash]; }
-            catch { return "0x" + hash.ToString("x10"); }
+            if (Labels.TryGetValue(hash, out string val))
+                return val;
+            return "0x" + hash.ToString("x10");
         }
 
         static Dictionary<ulong, string> GetLabels(string filepath)
@@ -132,6 +165,13 @@ namespace MotionXML
             foreach (var line in File.ReadAllLines(filepath))
                 labels.Add((ulong)line.Length << 32 | CRC.CRC32(line), line);
             return labels;
+        }
+
+        enum AsmMode
+        {
+            Asm,
+            Disasm,
+            Invalid
         }
     }
 }
