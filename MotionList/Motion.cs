@@ -40,6 +40,10 @@ namespace MotionList
             SFG2S2F2 = 0x28
         }
 
+        public Motion()
+        {
+
+        }
         internal Motion(BinaryReader reader)
         {
             MotionKind = reader.ReadUInt64();
@@ -119,8 +123,10 @@ namespace MotionList
                 writer.Write(AnimationHashes[i]);
             for (int i = 0; i < AnimationCount; i++)
                 writer.Write(AnimationUnks[i]);
-            
-            int hashSize = ExtraHashes.Count;
+
+            writer.BaseStream.Position = (writer.BaseStream.Position + 3 >> 2) << 2;//alignment by 4
+
+            int hashSize = ExtraHashes.Count * 8;
             if (!Enum.IsDefined(typeof(ExtraHashGroup), hashSize))
                 throw new NotImplementedException($"No implemented hash group has the size = \'{Size}\'");
 

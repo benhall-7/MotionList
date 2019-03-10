@@ -1,6 +1,7 @@
 ﻿using MotionList;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Xml;
 
@@ -17,9 +18,10 @@ namespace MotionXML
 
         static void Main(string[] args)
         {
+            args = new string[] { "-a", "output.xml" };
             AsmMode mode = AsmMode.Invalid;
             string input = "";
-            string output = "output.xml";
+            string output = "";
             string labels = "";
             if (args.Length == 0)
             {
@@ -52,31 +54,46 @@ namespace MotionXML
                 }
             }
 
-            if (string.IsNullOrEmpty(input))
+            if (mode == AsmMode.Invalid)
             {
-                Console.WriteLine(HelpText);
+                Console.WriteLine("Asm mode not set. Use -d or -a, see -h for details");
                 return;
             }
-            
-            Xml = new XmlDocument();
 
-            if (string.IsNullOrEmpty(labels))
+            if (string.IsNullOrEmpty(input))
+            {
+                Console.WriteLine("No input file set. See -h for details");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(output))
+            {
+                if (mode == AsmMode.Disasm)
+                    output = "output.xml";
+                else
+                    output = "output_mlist.bin";
+            }
+
+            //labels are only used on disassembly. During assembly they are parsed/hashed automatically
+            if (string.IsNullOrEmpty(labels) || mode == AsmMode.Asm)
                 Labels = new Dictionary<ulong, string>();
             else
                 Labels = GetLabels(labels);
 
-            switch (mode)
+            Xml = new XmlDocument();
+
+            if (mode == AsmMode.Disasm)
             {
-                case AsmMode.Invalid:
-                    Console.WriteLine("Asm mode not set. See -h");
-                    break;
-                case AsmMode.Disasm:
-                    MFile = new MotionFile(input);
-                    Disasm();
-                    Xml.Save(output);
-                    break;
-                case AsmMode.Asm:
-                    break;
+                MFile = new MotionFile(input);
+                Disasm();
+                Xml.Save(output);
+            }
+            else
+            {
+                Xml.Load(input);
+                MFile = new MotionFile();
+                Asm();
+                MFile.Save(output);
             }
         }
 
@@ -114,7 +131,57 @@ namespace MotionXML
 
         static void Asm()
         {
+            XmlElement root = Xml.DocumentElement;
+            MFile.IDHash = ConvertToHash(root.Attributes["ID"].Value);
+            var entries = MFile.Entries = new List<Motion>();
+            foreach (XmlElement elem in root.ChildNodes)
+            {
+                Motion motion = new Motion();
 
+                string mkind = elem.Attributes["Hash"].Value;
+                motion.MotionKind = ConvertToHash(mkind);
+                motion.GameHash = ConvertToHash(elem["GameHash"].InnerText);
+
+                ushort flags;
+                string flagText = elem["Flags"].InnerText;
+                if (!flagText.StartsWith("0x")
+                    || !ushort.TryParse(flagText.Substring(2),
+                        NumberStyles.HexNumber,
+                        CultureInfo.InvariantCulture,
+                        out flags))
+                    throw new Exception($"Error in motion_kind \'{mkind}\': Flags not formatted to proper hexadecimal");
+                motion.Flags = flags;
+                motion.Frames = byte.Parse(elem["TransitionFrames"].InnerText);
+
+                motion.AnimationCount = byte.Parse(elem["AnimationCount"].InnerText);
+                motion.AnimationHashes = new List<ulong>(motion.AnimationCount);
+                motion.AnimationUnks = new List<byte>(motion.AnimationCount);
+                for (int i = 0; i < motion.AnimationCount; i++)
+                {
+                    motion.AnimationHashes.Add(ConvertToHash(GetXmlByTagAndID("AnimationHash", i, elem).InnerText));
+                    motion.AnimationUnks.Add(byte.Parse(GetXmlByTagAndID("AnimationUnk", i, elem).InnerText));
+                }
+
+                motion.ExtraHashes = new Dictionary<Motion.ExtraHashKind, ulong>();
+                foreach (XmlElement extra in elem.GetElementsByTagName("ExtraHash"))
+                {
+                    Motion.ExtraHashKind kind = (Motion.ExtraHashKind)Enum.Parse(
+                        typeof(Motion.ExtraHashKind),
+                        extra.Attributes["Kind"].Value);
+                    motion.ExtraHashes.Add(kind, ConvertToHash(extra.InnerText));
+                }
+                
+                if (CheckContainsExtra(elem))
+                {
+                    motion.HasExtended = true;
+                    motion.XluStart = byte.Parse(elem["XluStart"].InnerText);
+                    motion.XluEnd = byte.Parse(elem["XluEnd"].InnerText);
+                    motion.CancelFrame = byte.Parse(elem["CancelFrame"].InnerText);
+                    motion.NoStopIntp = bool.Parse(elem["NoStopIntp"].InnerText);
+                }
+
+                entries.Add(motion);
+            }
         }
 
         static XmlNode NodeWithAttribute(string nodeName, string attrName, string attrValue)
@@ -157,6 +224,41 @@ namespace MotionXML
             if (Labels.TryGetValue(hash, out string val))
                 return val;
             return "0x" + hash.ToString("x10");
+        }
+
+        static ulong ConvertToHash(string val)
+        {
+            if (val.StartsWith("0x"))
+                return ulong.Parse(val.Substring(2), System.Globalization.NumberStyles.HexNumber);
+            return (ulong)val.Length << 32 | CRC.CRC32(val);//hash40 generation
+        }
+
+        static XmlNode GetXmlByTagAndID(string tag, int id, XmlElement element)
+        {
+            XmlNodeList nodes = element.GetElementsByTagName(tag);
+            foreach (XmlNode node in nodes)
+            {
+                if (id == byte.Parse(node.Attributes["ID"].Value))
+                    return node;
+            }
+            string mkind = element.Attributes["Hash"].Value;
+            throw new Exception($"Error in motion_kind \'{mkind}\': Animation ID mismatch");
+        }
+
+        static bool CheckContainsExtra(XmlElement element)
+        {
+            foreach (XmlElement elem in element.ChildNodes)
+            {
+                switch (elem.Name)
+                {
+                    case "XluStart":
+                    case "XluEnd":
+                    case "CancelFrame":
+                    case "NoStopIntp":
+                        return true;
+                }
+            }
+            return false;
         }
 
         static Dictionary<ulong, string> GetLabels(string filepath)
