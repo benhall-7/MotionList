@@ -99,29 +99,29 @@ namespace MotionXML
         static void Disasm()
         {
             Xml.AppendChild(Xml.CreateXmlDeclaration("1.0", "UTF-8", null));
-            XmlNode root = NodeWithAttribute("MotionList", "ID", ConvertHash(MFile.IDHash));
+            XmlNode root = NodeWithAttribute("motion_list", "id", ConvertHash(MFile.IDHash));
             foreach (Motion motion in MFile.Entries)
             {
-                XmlNode motionNode = NodeWithAttribute("Motion", "Hash", ConvertHash(motion.MotionKind));
-                motionNode.AppendChild(NodeWithValue("GameHash", ConvertHash(motion.GameHash)));
-                motionNode.AppendChild(NodeWithValue("Flags", "0x" + motion.Flags.ToString("x4")));
-                motionNode.AppendChild(NodeWithValue("TransitionFrames", motion.Frames.ToString()));
+                XmlNode motionNode = NodeWithAttribute("motion", "hash", ConvertHash(motion.MotionKind));
+                motionNode.AppendChild(NodeWithValue("game_hash", ConvertHash(motion.GameHash)));
+                motionNode.AppendChild(NodeWithValue("flags", "0x" + motion.Flags.ToString("x4")));
+                motionNode.AppendChild(NodeWithValue("transition_frames", motion.Frames.ToString()));
 
-                motionNode.AppendChild(NodeWithValue("AnimationCount", motion.AnimationCount.ToString()));
+                motionNode.AppendChild(NodeWithValue("animation_count", motion.AnimationCount.ToString()));
                 for (int i = 0; i < motion.AnimationCount; i++)
-                    motionNode.AppendChild(NodeWithAttributeValue("AnimationHash", ConvertHash(motion.AnimationHashes[i]), "ID", i.ToString()));
+                    motionNode.AppendChild(NodeWithAttributeValue("animation_hash", ConvertHash(motion.AnimationHashes[i]), "id", i.ToString()));
                 for (int i = 0; i < motion.AnimationCount; i++)
-                    motionNode.AppendChild(NodeWithAttributeValue("AnimationUnk", motion.AnimationUnks[i].ToString(), "ID", i.ToString()));
+                    motionNode.AppendChild(NodeWithAttributeValue("animation_unk", motion.AnimationUnks[i].ToString(), "id", i.ToString()));
 
                 foreach (var hash in motion.ExtraHashes)
-                    motionNode.AppendChild(NodeWithAttributeValue("ExtraHash", ConvertHash(hash.Value), "Kind", hash.Key.ToString()));
+                    motionNode.AppendChild(NodeWithAttributeValue("extra_hash", ConvertHash(hash.Value), "kind", hash.Key.ToString()));
 
                 if (motion.HasExtended)
                 {
-                    motionNode.AppendChild(NodeWithValue("XluStart", motion.XluStart.ToString()));
-                    motionNode.AppendChild(NodeWithValue("XluEnd", motion.XluEnd.ToString()));
-                    motionNode.AppendChild(NodeWithValue("CancelFrame", motion.CancelFrame.ToString()));
-                    motionNode.AppendChild(NodeWithValue("NoStopIntp", motion.NoStopIntp.ToString()));
+                    motionNode.AppendChild(NodeWithValue("xlu_start", motion.XluStart.ToString()));
+                    motionNode.AppendChild(NodeWithValue("xlu_end", motion.XluEnd.ToString()));
+                    motionNode.AppendChild(NodeWithValue("cancel_frame", motion.CancelFrame.ToString()));
+                    motionNode.AppendChild(NodeWithValue("no_stop_intp", motion.NoStopIntp.ToString()));
                 }
                 root.AppendChild(motionNode);
             }
@@ -131,18 +131,18 @@ namespace MotionXML
         static void Asm()
         {
             XmlElement root = Xml.DocumentElement;
-            MFile.IDHash = ConvertToHash(root.Attributes["ID"].Value);
+            MFile.IDHash = ConvertToHash(root.Attributes["id"].Value);
             var entries = MFile.Entries = new List<Motion>();
             foreach (XmlElement elem in root.ChildNodes)
             {
                 Motion motion = new Motion();
 
-                string mkind = elem.Attributes["Hash"].Value;
+                string mkind = elem.Attributes["hash"].Value;
                 motion.MotionKind = ConvertToHash(mkind);
-                motion.GameHash = ConvertToHash(elem["GameHash"].InnerText);
+                motion.GameHash = ConvertToHash(elem["game_hash"].InnerText);
 
                 ushort flags;
-                string flagText = elem["Flags"].InnerText;
+                string flagText = elem["flags"].InnerText;
                 if (!flagText.StartsWith("0x")
                     || !ushort.TryParse(flagText.Substring(2),
                         NumberStyles.HexNumber,
@@ -150,33 +150,33 @@ namespace MotionXML
                         out flags))
                     throw new Exception($"Error in motion_kind \'{mkind}\': Flags not formatted to proper hexadecimal");
                 motion.Flags = flags;
-                motion.Frames = byte.Parse(elem["TransitionFrames"].InnerText);
+                motion.Frames = byte.Parse(elem["transition_frames"].InnerText);
 
-                motion.AnimationCount = byte.Parse(elem["AnimationCount"].InnerText);
+                motion.AnimationCount = byte.Parse(elem["animation_count"].InnerText);
                 motion.AnimationHashes = new List<ulong>(motion.AnimationCount);
                 motion.AnimationUnks = new List<byte>(motion.AnimationCount);
                 for (int i = 0; i < motion.AnimationCount; i++)
                 {
-                    motion.AnimationHashes.Add(ConvertToHash(GetXmlByTagAndID("AnimationHash", i, elem).InnerText));
-                    motion.AnimationUnks.Add(byte.Parse(GetXmlByTagAndID("AnimationUnk", i, elem).InnerText));
+                    motion.AnimationHashes.Add(ConvertToHash(GetXmlByTagAndID("animation_hash", i, elem).InnerText));
+                    motion.AnimationUnks.Add(byte.Parse(GetXmlByTagAndID("animation_unk", i, elem).InnerText));
                 }
 
                 motion.ExtraHashes = new Dictionary<Motion.ExtraHashKind, ulong>();
-                foreach (XmlElement extra in elem.GetElementsByTagName("ExtraHash"))
+                foreach (XmlElement extra in elem.GetElementsByTagName("extra_hash"))
                 {
                     Motion.ExtraHashKind kind = (Motion.ExtraHashKind)Enum.Parse(
                         typeof(Motion.ExtraHashKind),
-                        extra.Attributes["Kind"].Value);
+                        extra.Attributes["kind"].Value);
                     motion.ExtraHashes.Add(kind, ConvertToHash(extra.InnerText));
                 }
                 
                 if (CheckContainsExtra(elem))
                 {
                     motion.HasExtended = true;
-                    motion.XluStart = byte.Parse(elem["XluStart"].InnerText);
-                    motion.XluEnd = byte.Parse(elem["XluEnd"].InnerText);
-                    motion.CancelFrame = byte.Parse(elem["CancelFrame"].InnerText);
-                    motion.NoStopIntp = bool.Parse(elem["NoStopIntp"].InnerText);
+                    motion.XluStart = byte.Parse(elem["xlu_start"].InnerText);
+                    motion.XluEnd = byte.Parse(elem["xlu_end"].InnerText);
+                    motion.CancelFrame = byte.Parse(elem["cancel_frame"].InnerText);
+                    motion.NoStopIntp = bool.Parse(elem["no_stop_intp"].InnerText);
                 }
 
                 entries.Add(motion);
@@ -228,7 +228,7 @@ namespace MotionXML
         static ulong ConvertToHash(string val)
         {
             if (val.StartsWith("0x"))
-                return ulong.Parse(val.Substring(2), System.Globalization.NumberStyles.HexNumber);
+                return ulong.Parse(val.Substring(2), NumberStyles.HexNumber);
             return (ulong)val.Length << 32 | CRC.CRC32(val);//hash40 generation
         }
 
@@ -237,10 +237,10 @@ namespace MotionXML
             XmlNodeList nodes = element.GetElementsByTagName(tag);
             foreach (XmlNode node in nodes)
             {
-                if (id == byte.Parse(node.Attributes["ID"].Value))
+                if (id == byte.Parse(node.Attributes["id"].Value))
                     return node;
             }
-            string mkind = element.Attributes["Hash"].Value;
+            string mkind = element.Attributes["hash"].Value;
             throw new Exception($"Error in motion_kind \'{mkind}\': Animation ID mismatch");
         }
 
@@ -250,10 +250,10 @@ namespace MotionXML
             {
                 switch (elem.Name)
                 {
-                    case "XluStart":
-                    case "XluEnd":
-                    case "CancelFrame":
-                    case "NoStopIntp":
+                    case "xlu_start":
+                    case "xlu_end":
+                    case "cancel_frame":
+                    case "no_stop_intp":
                         return true;
                 }
             }

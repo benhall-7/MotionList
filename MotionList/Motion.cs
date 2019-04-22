@@ -23,21 +23,21 @@ namespace MotionList
 
         public enum ExtraHashKind
         {
-            Expression,
-            Sound,
-            Effect,
-            Game2,
-            Expression2,
-            Sound2,
-            Effect2
+            expression,
+            sound,
+            effect,
+            game2,
+            expression2,
+            sound2,
+            effect2
         }
         public enum ExtraHashGroup
         {
-            None     = 0,
-            F        = 8,
-            SF       = 0x10,
-            XSF      = 0x18,
-            SFG2S2F2 = 0x28
+            none     = 0,
+            f        = 8,
+            sf       = 0x10,
+            xsf      = 0x18,
+            sfg2s2f2 = 0x28
         }
 
         public Motion()
@@ -73,26 +73,26 @@ namespace MotionList
             ExtraHashes = new Dictionary<ExtraHashKind, ulong>();
             switch ((ExtraHashGroup)hashSize)
             {
-                case ExtraHashGroup.None:
+                case ExtraHashGroup.none:
                     break;
-                case ExtraHashGroup.F:
-                    ExtraHashes.Add(ExtraHashKind.Effect, reader.ReadUInt64());
+                case ExtraHashGroup.f:
+                    ExtraHashes.Add(ExtraHashKind.effect, reader.ReadUInt64());
                     break;
-                case ExtraHashGroup.SF:
-                    ExtraHashes.Add(ExtraHashKind.Sound, reader.ReadUInt64());
-                    ExtraHashes.Add(ExtraHashKind.Effect, reader.ReadUInt64());
+                case ExtraHashGroup.sf:
+                    ExtraHashes.Add(ExtraHashKind.sound, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.effect, reader.ReadUInt64());
                     break;
-                case ExtraHashGroup.XSF:
-                    ExtraHashes.Add(ExtraHashKind.Expression, reader.ReadUInt64());
-                    ExtraHashes.Add(ExtraHashKind.Sound, reader.ReadUInt64());
-                    ExtraHashes.Add(ExtraHashKind.Effect, reader.ReadUInt64());
+                case ExtraHashGroup.xsf:
+                    ExtraHashes.Add(ExtraHashKind.expression, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.sound, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.effect, reader.ReadUInt64());
                     break;
-                case ExtraHashGroup.SFG2S2F2:
-                    ExtraHashes.Add(ExtraHashKind.Sound, reader.ReadUInt64());
-                    ExtraHashes.Add(ExtraHashKind.Effect, reader.ReadUInt64());
-                    ExtraHashes.Add(ExtraHashKind.Game2, reader.ReadUInt64());
-                    ExtraHashes.Add(ExtraHashKind.Sound2, reader.ReadUInt64());
-                    ExtraHashes.Add(ExtraHashKind.Effect2, reader.ReadUInt64());
+                case ExtraHashGroup.sfg2s2f2:
+                    ExtraHashes.Add(ExtraHashKind.sound, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.effect, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.game2, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.sound2, reader.ReadUInt64());
+                    ExtraHashes.Add(ExtraHashKind.effect2, reader.ReadUInt64());
                     break;
             }
 
@@ -132,26 +132,26 @@ namespace MotionList
 
             switch ((ExtraHashGroup)hashSize)
             {
-                case ExtraHashGroup.None:
+                case ExtraHashGroup.none:
                     break;
-                case ExtraHashGroup.F:
-                    writer.Write(ExtraHashes[ExtraHashKind.Effect]);
+                case ExtraHashGroup.f:
+                    writer.Write(ExtraHashes[ExtraHashKind.effect]);
                     break;
-                case ExtraHashGroup.SF:
-                    writer.Write(ExtraHashes[ExtraHashKind.Sound]);
-                    writer.Write(ExtraHashes[ExtraHashKind.Effect]);
+                case ExtraHashGroup.sf:
+                    writer.Write(ExtraHashes[ExtraHashKind.sound]);
+                    writer.Write(ExtraHashes[ExtraHashKind.effect]);
                     break;
-                case ExtraHashGroup.XSF:
-                    writer.Write(ExtraHashes[ExtraHashKind.Expression]);
-                    writer.Write(ExtraHashes[ExtraHashKind.Sound]);
-                    writer.Write(ExtraHashes[ExtraHashKind.Effect]);
+                case ExtraHashGroup.xsf:
+                    writer.Write(ExtraHashes[ExtraHashKind.expression]);
+                    writer.Write(ExtraHashes[ExtraHashKind.sound]);
+                    writer.Write(ExtraHashes[ExtraHashKind.effect]);
                     break;
-                case ExtraHashGroup.SFG2S2F2:
-                    writer.Write(ExtraHashes[ExtraHashKind.Sound]);
-                    writer.Write(ExtraHashes[ExtraHashKind.Effect]);
-                    writer.Write(ExtraHashes[ExtraHashKind.Game2]);
-                    writer.Write(ExtraHashes[ExtraHashKind.Sound2]);
-                    writer.Write(ExtraHashes[ExtraHashKind.Effect2]);
+                case ExtraHashGroup.sfg2s2f2:
+                    writer.Write(ExtraHashes[ExtraHashKind.sound]);
+                    writer.Write(ExtraHashes[ExtraHashKind.effect]);
+                    writer.Write(ExtraHashes[ExtraHashKind.game2]);
+                    writer.Write(ExtraHashes[ExtraHashKind.sound2]);
+                    writer.Write(ExtraHashes[ExtraHashKind.effect2]);
                     break;
             }
 
