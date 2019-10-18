@@ -1,3 +1,5 @@
+Note: this repository is deprecated; if you are looking for up-to-date file extraction tools, please use [motion_lib](https://github.com/ultimate-research/motion_lib) instead
+
 # MotionList
 Class structure for Smash Ultimate motion_list.bin files.
 
